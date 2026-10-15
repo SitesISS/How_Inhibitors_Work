@@ -1,0 +1,782 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>How Inhibitors Work</title>
+<meta name="description" content="AS Biology: a step-by-step walk-through of enzyme inhibitors, affinity, Vmax and Km, with check questions.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: a guided reading page. Section chips across the top; each section is the notes (with a diagram) followed by a check card that must be passed before moving on. */
+:root {
+  --bg: #edf2f1; --surface: #ffffff; --sunk: #f5f8f7; --ink: #14262b; --muted: #56696e; --line: #d2dedc;
+  --accent: #1c6676; --accent-ink: #ffffff; --accent-soft: #dcedf0;
+  --good: #1f7449; --good-bg: #e2f2e8; --bad: #b1372e; --bad-bg: #fbe8e5; --hint: #8d600c; --hint-bg: #fbf0d9;
+  --enz: #c9dfe4; --enz-line: #1c6676; --sub: #5aa469; --sub-end: #2c6a3a; --inh: #d9534f; --comp: #c0392b; --nonc: #2b5fb8;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0e191c; --surface: #162428; --sunk: #12201f; --ink: #e2eceb; --muted: #9bb0b2; --line: #2a3e42;
+    --accent: #63b8c8; --accent-ink: #08181b; --accent-soft: #1b3940;
+    --good: #72d09d; --good-bg: #163226; --bad: #f08d81; --bad-bg: #3b201c; --hint: #e6b85e; --hint-bg: #352a13;
+    --enz: #23474f; --enz-line: #63b8c8; --sub: #6cc07c; --sub-end: #b5e8bf; --inh: #f07b72; --comp: #f07b72; --nonc: #7fa8f0;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 17px; line-height: 1.6; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+[hidden] { display: none !important; }
+.wrap { max-width: 860px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 56px; display: flex; flex-direction: column; gap: 16px; }
+h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height: 1.15; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(26px, 4vw, 34px); letter-spacing: -.01em; }
+h2 { font-size: clamp(22px, 3vw, 27px); }
+h4 { font-size: 17px; }
+p { margin: 0; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+@media (max-width: 520px) { .card { padding: 15px; } body { font-size: 16px; } }
+
+/* Section chips */
+.chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; }
+.chips button { flex: 0 0 auto; font: inherit; font-size: 13px; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px 5px 6px; cursor: pointer; display: flex; gap: 6px; align-items: center; white-space: nowrap; }
+.chips button .n { font-family: var(--font-mono); font-size: 11px; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; background: var(--sunk); border: 1px solid var(--line); }
+.chips button.done .n { background: var(--good); color: var(--surface); border-color: var(--good); }
+.chips button[aria-current="step"] { color: var(--accent-ink); background: var(--accent); border-color: var(--accent); }
+.chips button[aria-current="step"] .n { background: var(--accent-ink); color: var(--accent); border-color: var(--accent-ink); }
+.chips button:disabled { opacity: .5; cursor: not-allowed; }
+button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* Notes */
+.notes { display: flex; flex-direction: column; gap: 12px; max-width: 70ch; }
+.notes b { font-weight: 700; }
+ul.bonds { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 2px; }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 620px) { .two { grid-template-columns: minmax(0, 1fr); } }
+.tile { background: var(--sunk); border: 1px solid var(--line); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+.tile.comp h4 { color: var(--comp); } .tile.nonc h4 { color: var(--nonc); }
+.note { font-size: 14px; color: var(--muted); }
+
+/* Figures */
+.fig { margin: 0; display: flex; flex-direction: column; gap: 8px; align-items: stretch; max-width: 100%; }
+.fig svg { width: 100%; max-width: 640px; height: auto; display: block; margin: 0 auto; }
+
+.fig figcaption { font-size: 14px; color: var(--muted); text-align: center; }
+.enz { fill: var(--enz); stroke: var(--enz-line); stroke-width: 2; }
+.sub { fill: var(--sub); }
+.sub-end { fill: var(--sub-end); }
+.inh { fill: var(--inh); }
+.figbg { fill: var(--surface); }
+.panel { fill: var(--sunk); stroke: var(--line); }
+.lbl { fill: var(--ink); font-family: var(--font-body); font-size: 14px; }
+.small-t { font-size: 12px; }
+.inh-t { fill: var(--inh); font-weight: 700; }
+.cap { fill: var(--muted); font-family: var(--font-body); font-size: 14px; }
+.lead { stroke: var(--muted); stroke-width: 1; }
+.bad-mark line { stroke: var(--bad); stroke-width: 3.5; stroke-linecap: round; }
+.good-mark { fill: none; stroke: var(--good); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+.arrow { stroke: var(--muted); stroke-width: 2; }
+.arrow-head { fill: var(--muted); }
+.cone { fill: var(--good); opacity: .35; stroke: var(--good); stroke-width: 1; }
+.axis { stroke: var(--ink); stroke-width: 1.6; }
+.grid { stroke: var(--line); stroke-width: 1; }
+.dash { stroke: var(--muted); stroke-width: 1.4; stroke-dasharray: 6 5; }
+.guide { fill: none; stroke-width: 1.3; stroke-dasharray: 4 4; }
+.num { fill: var(--muted); font-family: var(--font-mono); font-size: 12px; }
+.axis-t { fill: var(--ink); font-family: var(--font-body); font-size: 14px; }
+.curve .line { fill: none; stroke-width: 3; }
+.curve-t { font-weight: 700; font-size: 14px; }
+.c-normal .line { stroke: var(--ink); } .c-normal .guide { stroke: var(--ink); } .c-normal .curve-t { fill: var(--ink); }
+.c-comp .line { stroke: var(--comp); } .c-comp .guide { stroke: var(--comp); } .c-comp .curve-t { fill: var(--comp); }
+.c-nonc .line { stroke: var(--nonc); } .c-nonc .guide { stroke: var(--nonc); } .c-nonc .curve-t { fill: var(--nonc); }
+#inhib-fig .curve.off { display: none; }
+.toggles { display: flex; gap: 8px; flex-wrap: wrap; }
+.tog { font: inherit; font-size: 14px; color: var(--ink); background: var(--surface); border: 1.5px solid var(--line); border-radius: 999px; padding: 6px 12px; cursor: pointer; }
+.tog.on { border-color: var(--accent); background: var(--accent-soft); font-weight: 700; }
+.tog { display: inline-flex; align-items: center; gap: 8px; }
+.tog .sw { width: 18px; height: 4px; border-radius: 2px; display: inline-block; opacity: .35; }
+.tog.on .sw { opacity: 1; }
+.sw-normal { background: var(--ink); } .sw-comp { background: var(--comp); } .sw-nonc { background: var(--nonc); }
+.tog:disabled { cursor: default; }
+.sat-caps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; font-size: 13px; color: var(--muted); }
+.sat-caps b { color: var(--ink); }
+@media (max-width: 560px) { .sat-caps { grid-template-columns: minmax(0, 1fr); } }
+
+/* Check card */
+.check { border-top: 4px solid var(--accent); }
+.qhead { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+.stage { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; padding: 4px 10px; border-radius: 6px; background: var(--accent-soft); color: var(--accent); }
+.stage.backup { background: var(--hint-bg); color: var(--hint); }
+.stage.retry { background: var(--accent); color: var(--accent-ink); }
+.trail { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+.trail b { font-weight: 500; padding: 2px 7px; border-radius: 5px; border: 1px solid var(--line); }
+.trail b.done { background: var(--sunk); border-color: transparent; text-decoration: line-through; }
+.trail b.on { border-color: var(--hint); color: var(--hint); }
+.stem { font-size: 18px; font-weight: 700; max-width: 66ch; }
+.opts { display: flex; flex-direction: column; gap: 8px; }
+.opt { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; gap: 12px; align-items: center; width: 100%; text-align: left; font: inherit; color: var(--ink); background: var(--surface); border: 1.5px solid var(--line); border-radius: 8px; padding: 10px 12px; cursor: pointer; }
+.opt:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-soft); }
+.opt:disabled { cursor: default; }
+.opt .k { width: 30px; height: 30px; border-radius: 6px; display: grid; place-items: center; font-family: var(--font-mono); background: var(--sunk); border: 1px solid var(--line); }
+.opt .mark { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
+.opt.right { border-color: var(--good); background: var(--good-bg); } .opt.right .k { background: var(--good); color: var(--surface); border-color: var(--good); } .opt.right .mark { color: var(--good); }
+.opt.wrong { border-color: var(--bad); background: var(--bad-bg); } .opt.wrong .k { background: var(--bad); color: var(--surface); border-color: var(--bad); } .opt.wrong .mark { color: var(--bad); }
+.opt.dim { opacity: .55; }
+.log { display: flex; flex-direction: column; gap: 8px; }
+.msg { border-radius: 8px; padding: 11px 14px; }
+.msg h3 { font-family: var(--font-body); font-size: 15px; margin: 0 0 3px; }
+.msg.good { background: var(--good-bg); } .msg.good h3 { color: var(--good); }
+.msg.bad { background: var(--bad-bg); } .msg.bad h3 { color: var(--bad); }
+.msg.hint { background: var(--hint-bg); } .msg.hint h3 { color: var(--hint); }
+.btn { font: inherit; font-weight: 700; border: 0; border-radius: 8px; padding: 11px 20px; cursor: pointer; background: var(--accent); color: var(--accent-ink); }
+.btn.ghost { background: transparent; color: var(--accent); border: 1.5px solid var(--accent); }
+.btn:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.passed { display: flex; flex-direction: column; gap: 6px; }
+.passed div { display: flex; gap: 10px; align-items: baseline; font-size: 15px; }
+.tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: .05em; text-transform: uppercase; padding: 2px 7px; border-radius: 5px; white-space: nowrap; }
+.tag.first { background: var(--good-bg); color: var(--good); } .tag.help { background: var(--hint-bg); color: var(--hint); } .tag.miss { background: var(--bad-bg); color: var(--bad); }
+.big { font-family: var(--font-display); font-weight: 700; font-size: clamp(40px, 7vw, 56px); line-height: 1; font-variant-numeric: tabular-nums; }
+.big small { font-size: .45em; color: var(--muted); font-weight: 500; }
+.secs { display: flex; flex-direction: column; gap: 8px; }
+.secs .row { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+.linkbtn { font: inherit; font-size: 14px; color: var(--accent); background: none; border: 0; padding: 0; text-decoration: underline; cursor: pointer; }
+ol.keys { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 6px; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+@media (max-width: 600px) {
+  .fig svg .lbl, .fig svg .cap, .fig svg .axis-t { font-size: 21px; }
+  .fig svg .curve-t { font-size: 20px; }
+  .fig svg .num { font-size: 17px; }
+  .fig svg .small-t { font-size: 18px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">AS Biology · Enzymes</div>
+    <h1>How inhibitors work</h1>
+  </header>
+  <nav class="chips" id="chips" aria-label="Sections"></nav>
+  <main id="main" style="display:flex;flex-direction:column;gap:16px"></main>
+</div>
+<script>
+/* ===== Walk-through content: sections from the AS note pack ===== */
+const SECTIONS = [
+{ id: "s1", title: "Non-competitive inhibitors",
+  teach: `
+<p>An enzyme's active site has a precise 3-D shape that is complementary to its substrate. That shape is held in place by the enzyme's <b>tertiary structure</b>.</p>
+<p>A <b>non-competitive inhibitor</b> does <b>not</b> go into the active site. It fits into a different site on the enzyme, called an <b>allosteric site</b>.</p>
+<p>When it binds, it changes the 3-D shape of the enzyme's tertiary structure. Some of the bonds that hold the tertiary structure in place are disrupted. The bonds that hold tertiary structure are:</p>
+<ul class="bonds"><li>ionic bonds</li><li>hydrogen bonds</li><li>hydrophobic interactions</li><li>van der Waals forces</li><li>disulfide bridges (covalent)</li></ul>
+<p>Because the tertiary structure has changed, the <b>active site changes shape too</b>. The substrate no longer fits, so the <b>enzyme–substrate (E–S) complex is not formed</b>.</p>
+{{FIG:nc}}`,
+  checks: [
+  { id: "c1", q: "A non-competitive inhibitor binds to an enzyme. Why can the substrate no longer bind?",
+    o: ["It sits in the active site and blocks the substrate from entering", "It changes the tertiary structure, so the active site changes", "It binds to the substrate and changes the substrate's own shape", "It breaks the peptide bonds that hold the active site together"], a: 1,
+    w: { 0: "That's how a competitive inhibitor works. A non-competitive inhibitor binds somewhere else: the allosteric site.",
+         2: "Inhibitors bind to the enzyme, not the substrate. The substrate is unchanged; it's the enzyme that changes shape.",
+         3: "Peptide bonds hold the primary structure (the amino acid sequence). The inhibitor changes how the chain is folded, not the sequence." },
+    x: "The inhibitor binds at the allosteric site. This changes the enzyme's tertiary structure, which changes the shape of the active site. The substrate no longer fits, so no E–S complex forms.",
+    b: [ { q: "Where does a non-competitive inhibitor bind?", o: ["In the active site, alongside the substrate", "At an allosteric site, away from the active site", "On the substrate, before it reaches the enzyme", "On the product, after it leaves the enzyme"], a: 1,
+           x: "Allosteric means 'other site'. A non-competitive inhibitor never enters the active site." },
+         { q: "Which level of protein structure gives the active site its 3-D shape?", o: ["Primary structure (the amino acid sequence)", "Tertiary structure (how the chain is folded)", "The peptide bonds alone", "The substrate"], a: 1,
+           x: "The way the polypeptide chain is folded creates the active site. Change the folding and the active site changes." } ] },
+  { id: "c2", q: "Which list contains only bonds that help hold an enzyme's tertiary structure in shape?",
+    o: ["Hydrogen bonds, ionic bonds, disulfide bridges", "Peptide bonds, glycosidic bonds, hydrogen bonds", "Ionic bonds, phosphodiester bonds, ester bonds", "Glycosidic bonds, disulfide bridges, peptide bonds"], a: 0,
+    w: { 1: "Glycosidic bonds join sugars, and peptide bonds hold the primary structure, not the folding.",
+         2: "Phosphodiester bonds are found in DNA and RNA, and ester bonds in lipids.",
+         3: "Glycosidic bonds join sugars in carbohydrates, and peptide bonds hold the primary structure." },
+    x: "Tertiary structure is held by hydrogen bonds, ionic bonds, hydrophobic interactions, van der Waals forces and disulfide bridges. Disulfide bridges are the only covalent ones.",
+    b: [ { q: "Which of the bonds holding tertiary structure is covalent?", o: ["Hydrogen bonds", "Ionic bonds", "Disulfide bridges", "Hydrophobic interactions"], a: 2,
+           x: "Disulfide bridges form between the R groups of two cysteine molecules. They are the strongest of the tertiary-structure bonds." },
+         { q: "What do peptide bonds join together?", o: ["Amino acids, in the primary structure", "Glucose molecules, in polysaccharides", "Nucleotides, in DNA and RNA", "Fatty acids to a glycerol molecule"], a: 0,
+           x: "Peptide bonds link amino acids into a chain. Folding that chain into its tertiary structure relies on the other bonds." } ] }
+  ] },
+
+{ id: "s2", title: "Competitive inhibitors",
+  teach: `
+<p>A <b>competitive inhibitor</b> has a shape similar to the substrate, so it <b>fits into the active site</b> itself.</p>
+<p>While it is there, the substrate can no longer bind, so <b>no E–S complex can be formed</b> at that enzyme.</p>
+<p>The inhibitor and the substrate are <b>competing</b> for the same active sites. That's where the name comes from.</p>
+{{FIG:comp}}`,
+  checks: [
+  { id: "c3", q: "Why does a competitive inhibitor slow down an enzyme-catalysed reaction?",
+    o: ["It changes the shape of the active site from elsewhere", "It occupies active sites, so fewer E–S complexes form", "It destroys some of the substrate molecules", "It makes the enzyme produce a different product"], a: 1,
+    w: { 0: "That's a non-competitive inhibitor. A competitive inhibitor goes into the active site itself.",
+         2: "Inhibitors act on the enzyme, not the substrate. The substrate is still there, waiting for a free active site.",
+         3: "The enzyme can still only make its normal product. Fewer active sites are free to make it." },
+    x: "While a competitive inhibitor occupies an active site, the substrate can't enter. Fewer E–S complexes form each second, so the rate falls.",
+    b: [ { q: "Why can a competitive inhibitor fit into the active site?", o: ["It is similar in shape to the substrate", "It is larger than the enzyme", "It binds to the allosteric site first", "It is a protein, like the enzyme"], a: 0,
+           x: "Its shape is close enough to the substrate's to fit the active site, but it isn't turned into product." },
+         { q: "What must form before an enzyme can turn substrate into product?", o: ["An enzyme–substrate complex", "An enzyme–inhibitor complex", "A new active site", "A new peptide bond"], a: 0,
+           x: "The substrate must bind to the active site to form an E–S complex. Block the active site and this can't happen." } ] }
+  ] },
+
+{ id: "s3", title: "Permanent or reversible?",
+  teach: `
+<p>A competitive inhibitor can fit into the active site <b>permanently</b> or <b>reversibly</b>.</p>
+<div class="two">
+  <div class="tile"><h4>Permanent</h4><p>The inhibitor stays in the active site. That enzyme is out of action for good, so <b>increasing the substrate concentration has no effect</b> on the reaction rate.</p></div>
+  <div class="tile"><h4>Reversible</h4><p>The inhibitor only sits in the active site for a while, then leaves. Each time a site is free, a substrate might get in first, so <b>increasing the substrate concentration increases the rate</b>.</p></div>
+</div>`,
+  checks: [
+  { id: "c4", q: "A reaction contains competitive inhibitor X. Adding more substrate brings the rate back up. What does this tell you about X?",
+    o: ["It binds permanently to the active site", "It binds reversibly to the active site", "It binds to an allosteric site instead", "It is really a non-competitive inhibitor"], a: 1,
+    w: { 0: "If X were permanent, the blocked enzymes would stay blocked and extra substrate wouldn't help.",
+         2: "X is competitive, so it binds the active site, not an allosteric site.",
+         3: "Extra substrate can't help against a non-competitive inhibitor, because it doesn't compete for the active site." },
+    x: "Extra substrate only helps if active sites become free again, which happens when the inhibitor leaves. So X must bind reversibly.",
+    b: [ { q: "An inhibitor is fixed permanently in an active site. Can extra substrate push it out?", o: ["Yes, if enough substrate is added", "No, the inhibitor stays where it is", "Yes, but only at a high temperature", "Only if the substrate is smaller"], a: 1,
+           x: "A permanent inhibitor doesn't leave, so that active site never becomes available to the substrate." },
+         { q: "What does 'reversible' mean for an inhibitor?", o: ["It binds, then leaves again", "It reverses the reaction", "It changes the enzyme permanently", "It turns into substrate"], a: 0,
+           x: "A reversible inhibitor binds only temporarily. While it's away, the active site is free for substrate." } ] }
+  ] },
+
+{ id: "s4", title: "Reversible: slower, not less",
+  teach: `
+<p>If inhibition is <b>reversible</b>, the inhibitor only fits into the active site temporarily. The enzyme is <b>still active</b>.</p>
+<p>So enzyme–substrate complexes are still formed, just less often. The <b>same amount of product</b> will be made, but the reaction is slower: it <b>takes longer</b> to make the same amount of product.</p>
+{{FIG:product}}`,
+  checks: [
+  { id: "c5", q: "On a graph of product against time, how does the curve with a reversible inhibitor compare with the curve without one?",
+    o: ["It rises more slowly but reaches the same final amount", "It rises at the same rate but levels off at a lower amount", "It stays flat, because no product can be made at all", "It rises faster and levels off at a higher amount"], a: 0,
+    w: { 1: "The final amount depends on how much substrate there is. The inhibitor doesn't remove substrate, so the curve levels off at the same height.",
+         2: "The enzyme is still active. Inhibitor molecules come and go, so E–S complexes still form, just less often.",
+         3: "An inhibitor can't make the reaction faster or produce extra product." },
+    x: "The curve with the inhibitor is less steep (slower rate) but levels off at the same height, because all the substrate is still turned into product eventually.",
+    b: [ { q: "With a reversible inhibitor, is the enzyme permanently inactivated?", o: ["No, it works again when the inhibitor leaves", "Yes, the inhibitor destroys the enzyme", "Yes, its active site changes shape for good", "Only half of each enzyme molecule stops working"], a: 0,
+           x: "Reversible means the inhibitor leaves again, and the enzyme carries on working." },
+         { q: "What decides the total amount of product that is eventually made?", o: ["The amount of substrate at the start", "The amount of inhibitor that was added", "How fast the reaction goes at the start", "The size of each enzyme molecule"], a: 0,
+           x: "Each substrate molecule becomes product. When the substrate runs out, the reaction stops, however fast or slowly it got there." } ] }
+  ] },
+
+{ id: "s5", title: "Affinity and collisions",
+  teach: `
+<p>An enzyme's <b>affinity</b> for its substrate means <b>how easy it is for the substrate to get into the active site</b>.</p>
+<p>Entering an enzyme's active site needs a <b>successful random collision</b> between enzyme and substrate. "Successful" means having the correct:</p>
+<ul class="bonds"><li>speed</li><li>angle / direction of movement</li><li>orientation of both molecules</li></ul>
+<p><b>Orientation</b> is which way a molecule is "facing". Right now your face is orientated towards this screen. If you turn around, it is orientated away by a certain amount. A molecule can be moving in a straight line but spinning (changing orientation) at the same time.</p>
+{{FIG:collide}}`,
+  checks: [
+  { id: "c6", q: "For a substrate to enter the active site, the collision must be 'successful'. What does successful mean here?",
+    o: ["The right speed, angle and orientation", "The highest possible speed, whatever the angle", "Any collision at all, as long as the molecules touch", "The right temperature and pH, nothing else"], a: 0,
+    w: { 1: "Speed matters, but so do the direction of approach and which way the molecules are facing.",
+         2: "Most collisions aren't successful. The molecules have to meet in the right way.",
+         3: "Temperature and pH affect the enzyme, but a single collision is only successful if its speed, angle and orientation are right." },
+    x: "A successful collision has the right speed, the right angle (direction of movement) and the right orientation of both molecules.",
+    b: [ { q: "What does 'orientation' mean for a molecule?", o: ["Which way it is facing", "How fast it is moving", "How big it is", "How many atoms it has"], a: 0,
+           x: "A molecule can travel in a straight line while spinning, so its orientation keeps changing." },
+         { q: "What does an enzyme's affinity for its substrate describe?", o: ["How easily the substrate gets into the active site", "How quickly the product leaves the active site", "How heavy the enzyme molecule is compared with the substrate", "How many active sites each enzyme molecule has"], a: 0,
+           x: "High affinity: the substrate gets in easily. Low affinity: it's difficult." } ] }
+  ] },
+
+{ id: "s6", title: "High and low affinity",
+  teach: `
+<p><b>Low affinity</b> means speed, angle and orientation all have to be just right for the substrate to get in. For example, the angle <b>must</b> be between 179° and 181°. It's difficult for the substrate to enter the active site.</p>
+<p><b>High affinity</b> means those three things can be less precise. The angle of collision doesn't have to be exactly 180°: anywhere between 175° and 187° is fine.</p>
+{{FIG:angles}}
+<p>If it is difficult for substrates to get into the active site (low affinity), we can <b>increase the substrate concentration</b> to make it easier: more substrate molecules have a chance of entering the active site.</p>
+<p class="note">These angles are made-up numbers to help you picture the idea. The point is how precise a collision has to be.</p>`,
+  checks: [
+  { id: "c7", q: "Enzyme P only accepts substrates arriving between 179° and 181°. Enzyme Q accepts anything from 175° to 187°. Which has the higher affinity for its substrate?",
+    o: ["Enzyme P, because its range of angles is more precise", "Enzyme Q, as its collisions can be less precise", "Both the same, because 180° is in both of the ranges", "You can't tell without knowing the temperature"], a: 1,
+    w: { 0: "'Precise' sounds good, but it means fewer collisions succeed. That's low affinity.",
+         2: "Both include 180°, but Q accepts a much wider range of angles, so more of its collisions succeed.",
+         3: "The question is about how precise a collision must be. That alone tells you which has the higher affinity." },
+    x: "Enzyme Q accepts a wider range of angles, so more collisions are successful and the substrate gets in more easily: higher affinity.",
+    b: [ { q: "With high affinity, the speed, angle and orientation of a collision need to be", o: ["more precise", "less precise", "exactly 180°", "as fast as possible"], a: 1,
+           x: "High affinity is forgiving: a wider range of collisions still lets the substrate in." },
+         { q: "At the same substrate concentration, which enzyme forms more E–S complexes per second?", o: ["The one with high affinity", "The one with low affinity", "Both form the same number", "Neither forms any"], a: 0,
+           x: "With high affinity, more of the collisions are successful, so more E–S complexes form." } ] },
+  { id: "c8", q: "An enzyme has a low affinity for its substrate. How can you make E–S complexes form more often?",
+    o: ["Increase the substrate concentration", "Decrease the substrate concentration", "Add a competitive inhibitor", "Remove some of the enzyme"], a: 0,
+    w: { 1: "Fewer substrate molecules means fewer collisions, and so even fewer successful ones.",
+         2: "An inhibitor would make it even harder for substrate to get into the active sites.",
+         3: "Less enzyme means fewer active sites for the substrate to collide with." },
+    x: "More substrate means more collisions each second, so more of them happen to be successful, even though each one needs to be precise.",
+    b: [ { q: "Increasing the substrate concentration increases the number of", o: ["collisions per second", "active sites on each enzyme molecule", "degrees in each collision angle", "bonds holding the enzyme's shape"], a: 0,
+           x: "More molecules in the same space means more collisions per second." },
+         { q: "Only 1 collision in 1000 is successful. How could you get more successful collisions per second?", o: ["Make more collisions happen each second", "Make collisions happen less often overall", "Remove some of the substrate molecules", "Use fewer enzyme molecules in the mixture"], a: 0,
+           x: "If the success rate per collision can't change, more collisions per second still means more successes per second." } ] }
+  ] },
+
+{ id: "s7", title: "Vmax",
+  teach: `
+<p><b>V<sub>max</sub></b> is the <b>maximum rate of reaction</b>.</p>
+<p>Look at the three stages below. With <b>few substrate molecules</b>, many active sites are free, so increasing the substrate concentration increases the rate. With <b>more substrate molecules</b>, all the active sites are engaged in catalysis: the rate is at its maximum. With an <b>excess</b> of substrate, adding more substrate doesn't change the rate at all.</p>
+{{FIG:sat}}`,
+  checks: [
+  { id: "c9", q: "Why does the rate stop increasing once it reaches Vmax?",
+    o: ["All the active sites are occupied, so extra substrate waits", "The substrate has run out, so nothing is left to react", "The enzyme has been denatured by too much of its substrate", "The product has built up and is now inhibiting the enzyme"], a: 0,
+    w: { 1: "At Vmax there is plenty of substrate; look at the right-hand panel. The problem is that there are no free active sites.",
+         2: "Substrate doesn't denature an enzyme. The enzymes are all working, at full speed.",
+         3: "The graph is explained by active sites being full, not by the product." },
+    x: "At Vmax every active site is occupied all the time. Adding more substrate can't speed things up, because there are no free active sites to go into.",
+    b: [ { q: "At a low substrate concentration, what limits the rate?", o: ["The number of substrate molecules", "The number of enzyme molecules", "The amount of product already made", "The size of each active site"], a: 0,
+           x: "Many active sites are free, so the rate depends on how many substrate molecules are there to fill them." },
+         { q: "In the right-hand panel (excess substrate), how many active sites are free?", o: ["Almost none", "About half", "Most of them", "All of them"], a: 0,
+           x: "Every enzyme is busy. The extra substrate molecules are waiting for an active site to become free." } ] },
+  { id: "c10", q: "A reaction is running at Vmax. Which change would increase the rate?",
+    o: ["Adding more enzyme", "Adding more substrate", "Adding a competitive inhibitor", "Adding more product"], a: 0,
+    w: { 1: "At Vmax all the active sites are already busy, so extra substrate has nowhere to go.",
+         2: "An inhibitor would slow the reaction down.",
+         3: "Adding product doesn't speed up an enzyme." },
+    x: "At Vmax the number of active sites is the limiting factor. More enzyme means more active sites, so a higher maximum rate.",
+    b: [ { q: "At Vmax, what is limiting the rate?", o: ["The number of active sites", "The number of substrate molecules", "The amount of product", "The volume of water"], a: 0,
+           x: "Substrate is in excess, so it's the enzyme (its active sites) that limits the rate." },
+         { q: "Doubling the number of enzyme molecules doubles the number of", o: ["active sites", "substrate molecules", "product molecules already made", "inhibitor molecules"], a: 0,
+           x: "Each enzyme molecule brings its own active site." } ] }
+  ] },
+
+{ id: "s8", title: "Km",
+  teach: `
+<p><b>K<sub>m</sub></b> is the <b>substrate concentration needed to reach half V<sub>max</sub></b>. We use it to <b>compare enzymes' affinities</b>.</p>
+<p>A <b>low K<sub>m</sub></b> means the substrate can easily enter the active site: only a low concentration of substrate is needed to reach half V<sub>max</sub>. So <b>low K<sub>m</sub> = high affinity</b>.</p>
+<p>To find K<sub>m</sub> from a graph: <b>1</b> find V<sub>max</sub> on the y-axis, <b>2</b> halve it, <b>3</b> read across to the curve, <b>4</b> read down to the x-axis.</p>
+{{FIG:km}}
+<div class="tile"><h4>Think of sports cars</h4><p>Sports cars are compared by how quickly they get from 0 to 60 mph, not by their top speed. Top speed is hard to reach and hard to measure, but a standard benchmark partway there tells you a lot.</p><p>K<sub>m</sub> works the same way. V<sub>max</sub> is hard to measure exactly, because the curve only creeps towards it, so we compare enzymes at a benchmark instead: half V<sub>max</sub>. And just as a lower 0–60 time means a quicker car, a <b>lower K<sub>m</sub> means a higher affinity</b>.</p></div>`,
+  checks: [
+  { id: "c11", q: "Enzyme A has a Km of 2 mmol dm⁻³. Enzyme B has a Km of 8 mmol dm⁻³. Which has the higher affinity for its substrate?",
+    o: ["Enzyme A, as less substrate gives half Vmax", "Enzyme B, because a higher Km means a stronger enzyme", "Enzyme B, because it must reach Vmax more quickly", "Neither: you can't compare affinity using Km values"], a: 0,
+    w: { 1: "It's the other way round. A high Km means a lot of substrate is needed to reach half Vmax, so the affinity is low.",
+         2: "Km doesn't tell you about reaching Vmax. It's the substrate concentration at half Vmax.",
+         3: "Comparing affinity is exactly what Km is used for." },
+    x: "Enzyme A reaches half Vmax at only 2 mmol dm⁻³, so its substrate gets into the active site more easily. Lower Km = higher affinity.",
+    b: [ { q: "What is Km?", o: ["The substrate concentration giving half Vmax", "Half of the maximum rate of the reaction", "The maximum rate of the reaction", "The time it takes for the enzyme to reach Vmax"], a: 0,
+           x: "Km is a concentration, read from the x-axis. It isn't a rate." },
+         { q: "A low Km means that", o: ["only a little substrate is needed to reach half Vmax", "a lot of substrate is needed to reach half Vmax", "the enzyme has been denatured by the substrate", "the maximum rate of the reaction is low"], a: 0,
+           x: "Little substrate needed means the substrate gets in easily: high affinity." } ] },
+  { id: "c12", q: "Use the graph to find Km for this enzyme.", fig: "kmq",
+    o: ["4 mmol dm⁻³", "6 mmol dm⁻³", "8 mmol dm⁻³", "about 40 mmol dm⁻³"], a: 1, fixed: true,
+    w: { 0: "4 is half of Vmax, which is a rate on the y-axis. Km is the substrate concentration where the rate is 4: read across to the curve, then down.",
+         2: "8 is Vmax, a rate on the y-axis. Km is read from the x-axis.",
+         3: "That's roughly where the curve flattens towards Vmax. Km is where the rate is half Vmax." },
+    x: "Vmax is 8, so half Vmax is 4. Reading across from 4 to the curve and down to the x-axis gives Km = 6 mmol dm⁻³.",
+    b: [ { q: "On this graph, what is half Vmax?", fig: "kmq", o: ["4 units", "8 units", "2 units", "6 units"], a: 0,
+           x: "Vmax is the dashed line at 8, so half Vmax is 4." },
+         { q: "Once you've found half Vmax on the y-axis, how do you find Km?", o: ["Read across to the curve, then down to the x-axis", "Read straight across to the far right of the graph", "Read up from that point to the Vmax line", "Double the number and read it off the y-axis"], a: 0,
+           x: "Across to the curve, then down. The number on the x-axis is Km." } ] }
+  ] },
+
+{ id: "s9", title: "Inhibitors on the graph",
+  teach: `
+<p>Now put it together. The graph shows the rate of reaction for the normal enzyme, with a competitive inhibitor, and with a non-competitive inhibitor. Tap the buttons to add each curve. The buttons also work as the key.</p>
+{{FIG:inhib}}
+<div class="two">
+  <div class="tile comp"><h4>Competitive: same V<sub>max</sub>, higher K<sub>m</sub></h4><p>At a very high substrate concentration, the substrate stops the competitive inhibitor getting into the active sites, so V<sub>max</sub> is still reached. But more substrate is needed to get there, so it takes a higher concentration to reach half V<sub>max</sub>: K<sub>m</sub> is higher.</p></div>
+  <div class="tile nonc"><h4>Non-competitive: lower V<sub>max</sub>, same K<sub>m</sub></h4><p>A non-competitive inhibitor does <b>not</b> compete with the substrate for the active site, so increasing the substrate concentration doesn't affect it. It can still fit into the allosteric site just as easily as before. It will always affect some enzymes, so the rate will <b>never</b> be as fast as with normal enzyme only.</p></div>
+</div>`,
+  checks: [
+  { id: "c13", q: "Which description matches the curve for a non-competitive inhibitor?",
+    o: ["Lower Vmax, same Km", "Same Vmax, higher Km", "Same Vmax, same Km", "Higher Vmax, lower Km"], a: 0,
+    w: { 1: "That's a competitive inhibitor. Extra substrate can outcompete it, so Vmax is eventually reached.",
+         2: "That's the normal enzyme with no inhibitor.",
+         3: "An inhibitor can't raise the maximum rate." },
+    x: "A non-competitive inhibitor always takes some enzymes out of action, so Vmax is lower. The enzymes that are still working behave normally, so Km stays the same.",
+    b: [ { q: "Can adding more substrate overcome a non-competitive inhibitor?", o: ["No, because it doesn't compete for the active site", "Yes, the substrate pushes it out of the allosteric site", "Yes, at very high substrate concentrations", "Only if the temperature is raised"], a: 0,
+           x: "The inhibitor is at the allosteric site, so the substrate can't compete with it there." },
+         { q: "With a non-competitive inhibitor, some enzyme molecules are always inhibited. What does this do to the maximum rate?", o: ["Lowers it", "Raises it", "Leaves it the same", "Doubles it"], a: 0,
+           x: "Fewer working enzymes means fewer active sites, so a lower maximum rate." } ] },
+  { id: "c14", q: "Why does a competitive inhibitor increase Km but leave Vmax the same?",
+    o: ["Substrate outcompetes it at high [S], but more is needed to reach half Vmax", "It destroys some enzymes, so less substrate is needed to reach half Vmax", "It changes the active site's shape from an allosteric site, so Vmax stays", "It makes the enzyme's affinity higher, so more substrate fits each active site"], a: 0,
+    w: { 1: "A competitive inhibitor doesn't destroy enzymes. And a higher Km means more substrate is needed, not less.",
+         2: "Binding at an allosteric site is what a non-competitive inhibitor does. A competitive inhibitor binds the active site.",
+         3: "The inhibitor makes it harder for the substrate to get in, so the enzyme behaves as if its affinity were lower. That's why Km rises." },
+    x: "At very high substrate concentrations the substrate wins almost every active site, so Vmax is still reached. But the inhibitor gets in the way at lower concentrations, so more substrate is needed to reach half Vmax: Km is higher.",
+    b: [ { q: "At a very high substrate concentration, what happens with a competitive inhibitor?", o: ["Substrate gets into almost every active site first", "The inhibitor binds more strongly than before", "The inhibitor changes the enzyme's shape instead", "The enzyme denatures because of the extra substrate"], a: 0,
+           x: "There's so much substrate that it nearly always reaches a free active site before an inhibitor does." },
+         { q: "If Km increases, how much substrate is needed to reach half Vmax?", o: ["More", "Less", "The same", "None"], a: 0,
+           x: "Km is the substrate concentration at half Vmax, so a bigger Km means more substrate is needed." } ] }
+  ] }
+];
+
+const SUMMARY = [
+  "Non-competitive inhibitors bind at an allosteric site, change the tertiary structure and so the active site's shape. No E–S complex forms.",
+  "Competitive inhibitors fit into the active site, so the substrate can't bind.",
+  "Permanent inhibition can't be overcome by adding substrate. Reversible competitive inhibition can.",
+  "Reversible inhibition makes the reaction slower, but the same amount of product is made in the end.",
+  "Affinity is how easily the substrate gets into the active site. It needs a successful collision: right speed, angle and orientation.",
+  "Low affinity can be helped by increasing the substrate concentration.",
+  "Vmax is the maximum rate, reached when all the active sites are occupied.",
+  "Km is the substrate concentration that gives half Vmax. Low Km = high affinity.",
+  "Competitive inhibitor: same Vmax, higher Km. Non-competitive inhibitor: lower Vmax, same Km."
+];
+
+/* ===== Diagrams, drawn as inline SVG so they stay sharp and follow light/dark mode ===== */
+const F = {};
+
+function enzymePath(x, y, distorted) {
+  const W = 160, H = 110, r = 30;
+  const notch = distorted
+    ? `L ${x + 60} ${y} L ${x + 70} ${y + 30} L ${x + 90} ${y + 30} L ${x + 100} ${y}`
+    : `L ${x + 55} ${y} L ${x + 55} ${y + 22} Q ${x + 55} ${y + 34} ${x + 67} ${y + 34} L ${x + 93} ${y + 34} Q ${x + 105} ${y + 34} ${x + 105} ${y + 22} L ${x + 105} ${y}`;
+  return `M ${x + r} ${y} ${notch} L ${x + W - r} ${y} Q ${x + W} ${y} ${x + W} ${y + r} L ${x + W} ${y + 48} L ${x + W - 22} ${y + 64} L ${x + W} ${y + 80} L ${x + W} ${y + H - r} Q ${x + W} ${y + H} ${x + W - r} ${y + H} L ${x + r} ${y + H} Q ${x} ${y + H} ${x} ${y + H - r} L ${x} ${y + r} Q ${x} ${y} ${x + r} ${y} Z`;
+}
+const substrate = (x, y, cls = "sub") => `<path class="${cls}" d="M ${x} ${y} L ${x + 46} ${y} L ${x + 46} ${y + 28} Q ${x + 46} ${y + 38} ${x + 36} ${y + 38} L ${x + 10} ${y + 38} Q ${x} ${y + 38} ${x} ${y + 28} Z"/>`;
+const ncInhibitor = (x, y) => `<path class="inh" d="M ${x + 138} ${y + 64} L ${x + 162} ${y + 44} L ${x + 182} ${y + 64} L ${x + 162} ${y + 84} Z"/>`;
+const cross = (x, y) => `<g class="bad-mark"><line x1="${x - 8}" y1="${y - 8}" x2="${x + 8}" y2="${y + 8}"/><line x1="${x + 8}" y1="${y - 8}" x2="${x - 8}" y2="${y + 8}"/></g>`;
+const tick = (x, y) => `<polyline class="good-mark" points="${x - 9},${y} ${x - 3},${y + 7} ${x + 10},${y - 8}"/>`;
+
+F.nc = () => `<figure class="fig"><svg viewBox="0 0 640 300" role="img" aria-label="Left: substrate fits the active site. Right: a non-competitive inhibitor in the allosteric site has changed the active site's shape, so the substrate no longer fits.">
+  <g transform="translate(30,60)">
+    <path class="enz" d="${enzymePath(0, 40, false)}"/>
+    ${substrate(57, 34)}
+    <text class="lbl" x="80" y="20" text-anchor="middle">substrate</text>
+    <line class="lead" x1="105" y1="62" x2="196" y2="62"/><text class="lbl" x="200" y="66">active site</text>
+    <line class="lead" x1="150" y1="104" x2="196" y2="104"/><text class="lbl" x="200" y="108">allosteric site</text>
+    ${tick(80, 168)}
+    <text class="cap" x="80" y="192" text-anchor="middle">E–S complex forms</text>
+  </g>
+  <g transform="translate(410,60)">
+    <path class="enz" d="${enzymePath(0, 40, true)}"/>
+    ${ncInhibitor(0, 40)}
+    ${substrate(57, -18)}
+    ${cross(118, 2)}
+    <text class="lbl inh-t" x="162" y="152" text-anchor="middle">inhibitor</text>
+    <text class="cap" x="80" y="192" text-anchor="middle">Substrate no</text>
+    <text class="cap" x="80" y="214" text-anchor="middle">longer fits</text>
+  </g>
+</svg><figcaption>A non-competitive inhibitor binds at the allosteric site and changes the shape of the active site.</figcaption></figure>`;
+
+F.comp = () => `<figure class="fig"><svg viewBox="0 0 600 272" role="img" aria-label="A competitive inhibitor, similar in shape to the substrate, sits in the active site. The substrate is left outside and cannot bind.">
+  <g transform="translate(60,60)">
+    <path class="enz" d="${enzymePath(0, 40, false)}"/>
+    ${substrate(57, 34, "inh")}
+    <text class="lbl inh-t" x="80" y="20" text-anchor="middle">competitive inhibitor</text>
+    <text class="cap" x="80" y="192" text-anchor="middle">Active site blocked</text>
+  </g>
+  <g transform="translate(300,40)">
+    ${substrate(20, 40)}
+    ${cross(84, 58)}
+    <text class="lbl" x="43" y="28" text-anchor="middle">substrate</text>
+    <text class="cap" x="43" y="112" text-anchor="middle">can't get in</text>
+    ${substrate(150, 40, "inh")}
+    <text class="lbl" x="173" y="28" text-anchor="middle">inhibitor</text>
+    <text class="cap" x="108" y="150" text-anchor="middle">Similar shapes, so both fit the</text>
+    <text class="cap" x="108" y="168" text-anchor="middle">active site: they compete for it</text>
+  </g>
+</svg><figcaption>A competitive inhibitor occupies the active site, so no E–S complex can form at that enzyme.</figcaption></figure>`;
+
+/* ---- graph helper ---- */
+function plot(o) {
+  const W = o.w || 540, H = o.h || 320, L = 62, R = 18, T = 18, B = 52;
+  const pw = W - L - R, ph = H - T - B;
+  const sx = v => L + v / o.xmax * pw, sy = v => T + ph - v / o.ymax * ph;
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria || ""}">`;
+  if (o.grid) {
+    (o.xticks || []).forEach(t => { s += `<line class="grid" x1="${sx(t)}" y1="${T}" x2="${sx(t)}" y2="${T + ph}"/>`; });
+    (o.yticks || []).forEach(t => { s += `<line class="grid" x1="${L}" y1="${sy(t)}" x2="${L + pw}" y2="${sy(t)}"/>`; });
+  }
+  (o.hlines || []).forEach(h => { s += `<line class="${h.cls || "dash"}" x1="${L}" y1="${sy(h.y)}" x2="${L + pw}" y2="${sy(h.y)}"/>${h.label ? `<text class="lbl" x="${L + pw - 4}" y="${sy(h.y) - 6}" text-anchor="end">${h.label}</text>` : ""}`; });
+  (o.curves || []).forEach(c => {
+    let d = ""; for (let i = 0; i <= 120; i++) { const x = o.xmax * i / 120; d += (i ? " L " : "M ") + sx(x).toFixed(1) + " " + sy(c.f(x)).toFixed(1); }
+    s += `<g class="curve ${c.cls || ""}" ${c.id ? `data-curve="${c.id}"` : ""}>`;
+    (c.guides || []).forEach(g => { s += `<polyline class="guide" points="${L},${sy(g.y)} ${sx(g.x)},${sy(g.y)} ${sx(g.x)},${T + ph}"/>${g.label ? `<text class="lbl small-t" x="${sx(g.x) + 5}" y="${T + ph - 6}">${g.label}</text>` : ""}`; });
+    s += `<path class="line" d="${d}"/>${c.label ? `<text class="lbl curve-t" x="${sx(c.labelAt[0])}" y="${sy(c.labelAt[1])}" text-anchor="${c.anchor || "start"}">${c.label}</text>` : ""}</g>`;
+  });
+  s += `<line class="axis" x1="${L}" y1="${T}" x2="${L}" y2="${T + ph}"/><line class="axis" x1="${L}" y1="${T + ph}" x2="${L + pw}" y2="${T + ph}"/>`;
+  (o.xticks || []).forEach(t => { s += `<line class="axis" x1="${sx(t)}" y1="${T + ph}" x2="${sx(t)}" y2="${T + ph + 5}"/>${o.nums === false ? "" : `<text class="num" x="${sx(t)}" y="${T + ph + 19}" text-anchor="middle">${t}</text>`}`; });
+  (o.yticks || []).forEach(t => { s += `<line class="axis" x1="${L - 5}" y1="${sy(t)}" x2="${L}" y2="${sy(t)}"/>${o.nums === false ? "" : `<text class="num" x="${L - 9}" y="${sy(t) + 4}" text-anchor="end">${t}</text>`}`; });
+  (o.notes || []).forEach(n => { s += `<text class="lbl ${n.cls || ""}" x="${sx(n.x)}" y="${sy(n.y)}" text-anchor="${n.anchor || "start"}">${n.t}</text>`; });
+  s += `<text class="axis-t" x="${L + pw / 2}" y="${H - 8}" text-anchor="middle">${o.xlabel}</text>`;
+  s += `<text class="axis-t" transform="translate(16 ${T + ph / 2}) rotate(-90)" text-anchor="middle">${o.ylabel}</text></svg>`;
+  return s;
+}
+const mm = (V, K) => x => V * x / (K + x);
+
+F.product = () => `<figure class="fig">${plot({ xmax: 30, ymax: 11, xlabel: "Time", ylabel: "Amount of product", nums: false,
+  aria: "Product against time. Without inhibitor the curve rises steeply and levels off. With a reversible inhibitor it rises more slowly but levels off at the same height.",
+  hlines: [{ y: 10, label: "same final amount of product" }],
+  curves: [
+    { f: t => 10 * (1 - Math.exp(-t / 2.2)), cls: "c-normal", label: "No inhibitor", labelAt: [5.4, 8.6] },
+    { f: t => 10 * (1 - Math.exp(-t / 7)), cls: "c-comp", label: "Reversible inhibitor", labelAt: [11.5, 5.6] }
+  ] })}<figcaption>Slower, but the same amount of product in the end.</figcaption></figure>`;
+
+F.collide = () => {
+  const ex = 200, ey = 160;
+  const sub = (x, y, rot, cls) => `<g transform="translate(${x} ${y}) rotate(${rot})"><rect class="sub" x="-23" y="-19" width="46" height="38" rx="8"/><rect class="sub-end" x="-23" y="11" width="46" height="8" rx="3"/></g>`;
+  return `<figure class="fig"><svg viewBox="0 0 580 330" role="img" aria-label="Two substrate molecules approach an active site. One arrives straight on, facing the right way, and fits. The other is tilted and arrives at an angle, so it bounces off.">
+  <g transform="translate(${ex - 80} ${ey})"><path class="enz" d="${enzymePath(0, 0, false)}"/></g>
+  ${sub(ex, 70, 0)}
+  <line class="arrow" x1="${ex}" y1="98" x2="${ex}" y2="${ey - 14}" marker-end="url(#ah)"/>
+  ${tick(ex + 40, 66)}
+  <text class="cap" x="${ex - 30}" y="30" text-anchor="middle">Right way: it fits</text>
+  ${sub(400, 70, 50)}
+  <line class="arrow" x1="380" y1="98" x2="${ex + 52}" y2="${ey - 14}" marker-end="url(#ah)"/>
+  ${cross(446, 64)}
+  <text class="cap" x="440" y="30" text-anchor="middle">Wrong way: bounces off</text>
+  <text class="lbl" x="290" y="${ey + 150}" text-anchor="middle">Darker edge = the way the substrate faces</text>
+  <defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="arrow-head" d="M 0 0 L 10 5 L 0 10 z"/></marker></defs>
+</svg><figcaption>A collision only succeeds if the substrate arrives the right way.</figcaption></figure>`;
+};
+
+F.angles = () => {
+  const cone = (cx, cy, a1, a2, len) => {
+    const pt = deg => { const t = (deg - 180) * Math.PI / 180; return [cx + len * Math.sin(t), cy - len * Math.cos(t)]; };
+    const A = pt(a1), Bp = pt(a2); return `<path class="cone" d="M ${cx} ${cy} L ${A[0].toFixed(1)} ${A[1].toFixed(1)} L ${Bp[0].toFixed(1)} ${Bp[1].toFixed(1)} Z"/>`; };
+  const site = (x, y) => `<g transform="translate(${x - 80} ${y})"><path class="enz" d="${enzymePath(0, 0, false)}"/></g>`;
+  return `<figure class="fig"><svg viewBox="0 0 560 304" role="img" aria-label="Two enzymes. Low affinity: only a very narrow range of approach angles, 179 to 181 degrees, lets the substrate in. High affinity: a wider range, 175 to 187 degrees, works.">
+  ${site(140, 150)}${cone(140, 150, 179, 181, 130)}
+  <line class="dash" x1="140" y1="150" x2="140" y2="16"/>
+  <text class="cap" x="140" y="292" text-anchor="middle">Low affinity: 179°–181°</text>
+  ${site(420, 150)}${cone(420, 150, 175, 187, 130)}
+  <line class="dash" x1="420" y1="150" x2="420" y2="16"/>
+  <text class="cap" x="420" y="292" text-anchor="middle">High affinity: 175°–187°</text>
+  <text class="lbl" x="280" y="60" text-anchor="middle">shaded = angles</text>
+  <text class="lbl" x="280" y="82" text-anchor="middle">that work</text>
+  <text class="lbl" x="280" y="116" text-anchor="middle">dashed = 180°</text>
+</svg><figcaption>The wider the range of collisions that work, the higher the affinity.</figcaption></figure>`;
+};
+
+F.sat = () => {
+  const E = [[30, 34], [86, 26], [140, 40], [44, 90], [104, 84], [152, 100], [70, 134]];
+  const freeS = [[16, 64], [62, 60], [122, 62], [172, 66], [20, 126], [118, 128], [160, 138], [92, 112], [40, 156], [136, 156]];
+  const enzC = (x, y, bound) => `<circle class="enz" cx="${x}" cy="${y}" r="17"/><circle class="figbg" cx="${x + 11}" cy="${y - 11}" r="7"/>${bound ? `<circle class="sub" cx="${x + 11}" cy="${y - 11}" r="6"/>` : ""}`;
+  const panel = (ox, nBound, nFree) => `<g transform="translate(${ox} 0)"><rect class="panel" x="0" y="0" width="190" height="172" rx="8"/>${E.map((p, i) => enzC(p[0], p[1], i < nBound)).join("")}${freeS.slice(0, nFree).map(p => `<circle class="sub" cx="${p[0]}" cy="${p[1]}" r="6"/>`).join("")}</g>`;
+  const panels = `<svg viewBox="0 0 600 176" role="img" aria-label="Three panels of enzymes and substrate. Left: few substrate molecules, many active sites free. Middle: all active sites occupied. Right: all active sites occupied and many extra substrate molecules waiting.">${panel(2, 2, 0)}${panel(205, 7, 0)}${panel(408, 7, 10)}</svg>`;
+  const caps = `<div class="sat-caps"><p><b>Few substrate molecules.</b> Many active sites free: more substrate increases the rate.</p><p><b>More substrate molecules.</b> All active sites engaged in catalysis: maximum rate.</p><p><b>Excess substrate.</b> All active sites engaged: more substrate does not change the rate.</p></div>`;
+  const g = plot({ xmax: 40, ymax: 11, xlabel: "Substrate concentration", ylabel: "Initial rate of reaction", nums: false, h: 300,
+    aria: "Rate rises steeply at low substrate concentration, then levels off at Vmax.",
+    hlines: [{ y: 10, label: "Vmax" }],
+    curves: [{ f: mm(10, 3), cls: "c-normal" }],
+    notes: [{ x: 4.5, y: 3.6, t: "① few" }, { x: 14, y: 6.6, t: "② more", anchor: "middle" }, { x: 34, y: 7.8, t: "③ excess", anchor: "middle" }] });
+  return `<figure class="fig">${panels}${caps}${g}<figcaption>Redrawn from the slide: the effect of substrate concentration on the rate of an enzyme-catalysed reaction.</figcaption></figure>`;
+};
+
+F.km = () => `<figure class="fig">${plot({ xmax: 20, ymax: 11, xlabel: "Substrate concentration / mmol dm⁻³", ylabel: "Rate / arbitrary units", grid: true,
+  xticks: [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20], yticks: [0, 2, 4, 5, 6, 8, 10],
+  aria: "Worked example. Vmax is 10. Half Vmax is 5. Reading across from 5 to the curve and down gives Km = 2.",
+  hlines: [{ y: 10, label: "① Vmax = 10" }],
+  curves: [{ f: mm(10, 2), cls: "c-normal", guides: [{ x: 2, y: 5, label: "④ Km = 2" }] }],
+  notes: [{ x: 2.8, y: 5.2, t: "② half Vmax = 5" }] })}
+  <figcaption>Worked example: V<sub>max</sub> = 10, so half V<sub>max</sub> = 5, which gives K<sub>m</sub> = 2 mmol dm⁻³.</figcaption></figure>`;
+
+F.kmq = () => `<figure class="fig">${plot({ xmax: 48, ymax: 9, xlabel: "Substrate concentration / mmol dm⁻³", ylabel: "Rate / arbitrary units", grid: true,
+  xticks: [0, 6, 12, 18, 24, 30, 36, 42, 48], yticks: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+  aria: "Rate against substrate concentration. The dashed Vmax line is at 8. The curve passes through a rate of 4 at a substrate concentration of 6.",
+  hlines: [{ y: 8, label: "Vmax" }],
+  curves: [{ f: mm(8, 6), cls: "c-normal" }] })}</figure>`;
+
+F.inhib = () => `<figure class="fig" id="inhib-fig">
+  <div class="toggles" role="group" aria-label="Show curves">
+    <button type="button" class="tog on" data-show="normal" aria-pressed="true" disabled><i class="sw sw-normal"></i>Normal enzyme</button>
+    <button type="button" class="tog" data-show="comp" aria-pressed="false"><i class="sw sw-comp"></i>Competitive: same Vmax, higher Km</button>
+    <button type="button" class="tog" data-show="nonc" aria-pressed="false"><i class="sw sw-nonc"></i>Non-competitive: lower Vmax, same Km</button>
+  </div>
+  ${plot({ xmax: 40, ymax: 11, xlabel: "Substrate concentration [S]", ylabel: "Rate of reaction", nums: false, h: 340,
+    aria: "Normal enzyme reaches Vmax with a low Km. Competitive inhibitor reaches the same Vmax but has a higher Km. Non-competitive inhibitor has a lower Vmax but the same Km.",
+    hlines: [{ y: 10, label: "" }],
+    notes: [{ x: 0.6, y: 10.3, t: "Vmax" }],
+    curves: [
+      { id: "normal", f: mm(10, 2), cls: "c-normal", guides: [{ x: 2, y: 5, label: "Km" }] },
+      { id: "comp", f: mm(10, 7), cls: "c-comp", guides: [{ x: 7, y: 5, label: "Km" }] },
+      { id: "nonc", f: mm(5, 2), cls: "c-nonc", guides: [{ x: 2, y: 2.5 }] }
+    ] })}
+  <figcaption>Redrawn from the slide. Dashed lines show where each curve reaches half its own V<sub>max</sub>.</figcaption></figure>`;
+
+/* ===== Walk-through engine ===== */
+const KEY = "as-bio-inhibitors-walkthrough-v1";
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const LET = "ABCD";
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const reduceMotion = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+const CHECKS = SECTIONS.flatMap(s => s.checks);
+
+let P = { sec: 0, res: {} };           // saved progress
+try { const raw = localStorage.getItem(KEY); if (raw) P = Object.assign(P, JSON.parse(raw)); } catch (e) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(P)); } catch (e) {} };
+
+/* Balanced answer positions: each letter is correct equally often, never 3 times running. */
+const bags = { main: [], back: [] }, hist = { main: [], back: [] };
+function deal(name, n, allowed) {
+  const bag = bags[name], h = hist[name];
+  const ok = t => t < n && (!allowed || allowed.includes(t)) && !(h.length >= 2 && h[h.length - 1] === t && h[h.length - 2] === t);
+  let k = -1;
+  for (let tries = 0; tries < 3 && k < 0; tries++) { for (let j = bag.length - 1; j >= 0; j--) if (ok(bag[j])) { k = j; break; } if (k < 0) bag.unshift(...shuffle([0, 1, 2, 3])); }
+  const t = k >= 0 ? bag.splice(k, 1)[0] : (allowed ? allowed[0] : 0); h.push(t); return t;
+}
+function orderFor(n, correct, t, fixed) {
+  const idx = [...Array(n).keys()];
+  if (fixed) { const desc = idx.slice().reverse(); if (n - 1 - correct === t) return desc; if (correct === t) return idx; return Math.random() < .5 ? idx : desc; }
+  const rest = shuffle(idx.filter(i => i !== correct)); rest.splice(t, 0, correct); return rest;
+}
+function order(q, bag) { return orderFor(q.o.length, q.a, deal(bag, q.o.length, q.fixed ? [q.a, q.o.length - 1 - q.a] : null), q.fixed); }
+
+/* Live state of the current check */
+let R = null;
+const sectionDone = i => SECTIONS[i].checks.every(c => P.res[c.id]);
+const unlocked = () => { let i = 0; while (i < SECTIONS.length && sectionDone(i)) i++; return i; }; // first unfinished section
+
+function renderChips() {
+  const u = unlocked();
+  $("#chips").innerHTML = SECTIONS.map((s, i) => `<button type="button" data-i="${i}" class="${sectionDone(i) ? "done" : ""}" ${P.sec === i ? 'aria-current="step"' : ""} ${i > u ? "disabled title=\"Finish the earlier sections first\"" : ""}><span class="n">${sectionDone(i) ? "✓" : i + 1}</span>${esc(s.title)}</button>`).join("")
+    + `<button type="button" data-i="end" ${P.sec === "end" ? 'aria-current="step"' : ""} ${u < SECTIONS.length ? "disabled" : ""}><span class="n">★</span>Summary</button>`;
+  $("#chips").querySelectorAll("button").forEach(b => b.addEventListener("click", () => goSection(b.dataset.i === "end" ? "end" : +b.dataset.i)));
+  const cur = $("#chips").querySelector('[aria-current="step"]'); if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: "nearest", inline: "nearest" });
+}
+
+function goSection(i) { P.sec = i; save(); R = null; render(); window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" }); }
+
+function fillFigs(html) { return html.replace(/\{\{FIG:(\w+)\}\}/g, (m, k) => F[k] ? F[k]() : ""); }
+
+function render() {
+  renderChips();
+  if (P.sec === "end") return renderEnd();
+  if (P.sec > unlocked()) P.sec = unlocked();
+  const s = SECTIONS[P.sec];
+  const done = s.checks.filter(c => P.res[c.id]);
+  const next = s.checks.find(c => !P.res[c.id]);
+  $("#main").innerHTML = `
+    <section class="card"><div class="eyebrow">Section ${P.sec + 1} of ${SECTIONS.length}</div><h2>${esc(s.title)}</h2><div class="notes">${fillFigs(s.teach)}</div></section>
+    <section class="card check" id="checkcard">
+      ${done.length ? `<div class="passed">${done.map(c => `<div><span class="tag ${P.res[c.id]}">${P.res[c.id] === "first" ? "First try" : P.res[c.id] === "help" ? "After help" : "Revisit"}</span><span>${esc(c.q)}</span></div>`).join("")}</div>` : ""}
+      <div id="qzone"></div>
+    </section>`;
+  wireFig();
+  if (next) startCheck(next);
+  else finishSection();
+}
+
+function wireFig() {
+  const fig = $("#inhib-fig"); if (!fig) return;
+  const show = { normal: true, comp: false, nonc: false };
+  const apply = () => { fig.querySelectorAll("[data-curve]").forEach(g => g.classList.toggle("off", !show[g.dataset.curve])); fig.querySelectorAll(".tog").forEach(b => { b.classList.toggle("on", show[b.dataset.show]); b.setAttribute("aria-pressed", show[b.dataset.show]); }); };
+  fig.querySelectorAll(".tog[data-show]").forEach(b => b.addEventListener("click", () => { if (b.dataset.show !== "normal") { show[b.dataset.show] = !show[b.dataset.show]; apply(); } }));
+  apply();
+}
+
+function startCheck(c) {
+  R = { c, phase: "main", bi: 0, first: null, order: order(c, "main"), bOrder: null };
+  drawQ(); clearLog();
+}
+
+function curQ() { return R.phase === "back" ? R.c.b[R.bi] : R.c; }
+function curOrder() { return R.phase === "back" ? R.bOrder : R.order; }
+
+function drawQ() {
+  const c = R.c, s = SECTIONS[P.sec], q = curQ(), ord = curOrder();
+  const idx = s.checks.indexOf(c) + 1;
+  let label, cls = "";
+  if (R.phase === "main") label = `Check ${idx} of ${s.checks.length}`;
+  else if (R.phase === "back") { label = `Back-up question ${R.bi + 1} of ${c.b.length}`; cls = "backup"; }
+  else { label = `Second try · Check ${idx}`; cls = "retry"; }
+  const trail = R.phase === "main" ? "" : `<div class="trail"><b class="done">Check</b>${c.b.map((_, k) => `<i>→</i><b class="${R.phase === "back" && R.bi === k ? "on" : (R.phase === "retry" || R.bi > k ? "done" : "")}">Back-up ${k + 1}</b>`).join("")}<i>→</i><b class="${R.phase === "retry" ? "on" : ""}">Second try</b></div>`;
+  $("#qzone").innerHTML = `
+    <div class="qhead"><span class="stage ${cls}">${label}</span></div>${trail}
+    ${q.fig ? F[q.fig]() : ""}
+    <p class="stem">${esc(q.q)}</p>
+    <div class="opts" id="opts">${ord.map((oi, pos) => `<button type="button" class="opt" data-oi="${oi}" id="opt-${pos}"><span class="k">${LET[pos]}</span><span>${esc(q.o[oi])}</span><span class="mark"></span></button>`).join("")}</div>
+    <div class="log" id="log" aria-live="polite"></div>
+    <div class="actions" id="actions"></div>`;
+  $("#opts").querySelectorAll(".opt").forEach(b => b.addEventListener("click", () => choose(+b.dataset.oi)));
+}
+function clearLog() { const l = $("#log"); if (l) l.innerHTML = ""; }
+function letter(oi) { return LET[curOrder().indexOf(oi)]; }
+function lock(chosen, correct, reveal) {
+  $("#opts").querySelectorAll(".opt").forEach(b => {
+    const oi = +b.dataset.oi; b.disabled = true;
+    if (oi === chosen && chosen === correct) { b.classList.add("right"); b.querySelector(".mark").textContent = "Correct"; }
+    else if (oi === chosen) { b.classList.add("wrong"); b.querySelector(".mark").textContent = "Your answer"; }
+    else if (oi === correct && reveal) { b.classList.add("right"); b.querySelector(".mark").textContent = "Answer"; }
+    else b.classList.add("dim");
+  });
+}
+function msg(kind, title, text) {
+  const d = document.createElement("div"); d.className = "msg " + kind;
+  d.innerHTML = (title ? `<h3>${esc(title)}</h3>` : "") + `<p>${esc(text)}</p>`;
+  $("#log").appendChild(d);
+}
+function actions(list) {
+  const a = $("#actions"); a.innerHTML = "";
+  list.forEach((it, k) => { const b = document.createElement("button"); b.type = "button"; b.className = "btn" + (it.ghost ? " ghost" : ""); b.textContent = it.label; b.addEventListener("click", it.go); a.appendChild(b); if (k === 0) setTimeout(() => { b.focus({ preventScroll: true }); b.scrollIntoView({ block: "nearest", behavior: reduceMotion ? "auto" : "smooth" }); }, 0); });
+}
+
+function choose(oi) {
+  const c = R.c, q = curQ();
+  if (R.phase === "back") {
+    const ok = oi === q.a; lock(oi, q.a, true);
+    msg(ok ? "good" : "bad", ok ? "Correct" : `The answer is ${letter(q.a)}`, q.x);
+    const last = R.bi === c.b.length - 1;
+    actions([{ label: last ? "Try the check question again" : "Next back-up question", go: () => {
+      if (last) { R.phase = "retry"; const was = R.order.indexOf(c.a); if (c.fixed) { const f = R.order.slice().reverse(); if (f.indexOf(c.a) !== was) R.order = f; } else { const t = shuffle([0, 1, 2, 3].filter(p => p !== was))[0]; R.order = orderFor(4, c.a, t, false); } drawQ(); msg("hint", "Second try", "The options are in a new order, so read them carefully."); }
+      else { R.bi++; R.bOrder = order(c.b[R.bi], "back"); drawQ(); }
+      focusFirst();
+    } }]);
+    return;
+  }
+  const ok = oi === c.a;
+  if (R.phase === "main") {
+    if (ok) { lock(oi, c.a, false); msg("good", "Correct", c.x); record("first"); }
+    else {
+      lock(oi, c.a, false); R.first = oi;
+      msg("bad", `Not quite: ${letter(oi)} isn't right`, c.w[oi] || "That isn't the right answer.");
+      msg("hint", "Let's check the basics", `Answer ${c.b.length} short back-up questions, then try this one again. Re-read the notes above if you need to.`);
+      actions([{ label: "Start the back-up questions", go: () => { R.phase = "back"; R.bi = 0; R.bOrder = order(c.b[0], "back"); drawQ(); focusFirst(); } }]);
+    }
+    return;
+  }
+  lock(oi, c.a, true);
+  if (ok) { msg("good", "Got it on the second try", c.x); record("help"); }
+  else { msg("bad", `Not this time. The answer is ${letter(c.a)}`, (c.w[oi] ? c.w[oi] + " " : "") + c.x); record("miss"); }
+}
+function focusFirst() { const b = $("#opt-0"); if (b) { b.focus({ preventScroll: true }); $("#qzone").scrollIntoView({ block: "start", behavior: reduceMotion ? "auto" : "smooth" }); } }
+
+function record(result) {
+  P.res[R.c.id] = result; save(); renderChips();
+  const s = SECTIONS[P.sec], next = s.checks.find(c => !P.res[c.id]);
+  if (next) actions([{ label: "Next check question", go: () => { render(); setTimeout(() => $("#checkcard").scrollIntoView({ block: "start", behavior: reduceMotion ? "auto" : "smooth" }), 0); } }]);
+  else actions(sectionNav());
+}
+function sectionNav() {
+  const last = P.sec === SECTIONS.length - 1;
+  return [{ label: last ? "See your summary" : `Next section: ${SECTIONS[P.sec + 1].title}`, go: () => goSection(last ? "end" : P.sec + 1) }];
+}
+function finishSection() {
+  const s = SECTIONS[P.sec];
+  $("#qzone").innerHTML = `<p>You've finished this section's checks.</p><div class="actions" id="actions"></div>`;
+  const a = sectionNav().concat([{ label: "Redo this section's questions", ghost: true, go: () => { s.checks.forEach(c => delete P.res[c.id]); save(); render(); } }]);
+  const box = $("#actions");
+  a.forEach(it => { const b = document.createElement("button"); b.type = "button"; b.className = "btn" + (it.ghost ? " ghost" : ""); b.textContent = it.label; b.addEventListener("click", it.go); box.appendChild(b); });
+}
+
+function renderEnd() {
+  const n = CHECKS.length, c = { first: 0, help: 0, miss: 0 };
+  CHECKS.forEach(k => { if (P.res[k.id]) c[P.res[k.id]]++; });
+  const pts = c.first + c.help * 0.5;
+  const fmt = v => (v % 1 ? Math.floor(v) + "½" : String(v));
+  $("#main").innerHTML = `
+    <section class="card"><div class="eyebrow">Summary</div>
+      <div class="big">${fmt(pts)}<small> / ${n} checks</small></div>
+      <p>${c.first} right first time · ${c.help} right after the back-up questions · ${c.miss} to revisit</p>
+      <div class="secs">${SECTIONS.map((s, i) => { const r = s.checks.map(k => P.res[k.id]); const worst = r.includes("miss") ? "miss" : r.includes("help") ? "help" : "first";
+        return `<div class="row"><span><span class="tag ${worst}">${worst === "first" ? "Secure" : worst === "help" ? "Getting there" : "Revisit"}</span> ${esc(s.title)}</span><button type="button" class="linkbtn" data-go="${i}">Go to section</button></div>`; }).join("")}</div>
+    </section>
+    <section class="card"><h2>Key points</h2><ol class="keys">${SUMMARY.map(t => `<li>${esc(t)}</li>`).join("")}</ol>
+      <div class="actions"><button type="button" class="btn ghost" id="restart">Start again from the beginning</button><span id="confirm" class="note"></span></div></section>`;
+  $("#main").querySelectorAll("[data-go]").forEach(b => b.addEventListener("click", () => goSection(+b.dataset.go)));
+  let armed = false;
+  $("#restart").addEventListener("click", () => {
+    if (!armed) { armed = true; $("#confirm").textContent = "This clears your answers. Click again to confirm."; setTimeout(() => { armed = false; const el = $("#confirm"); if (el) el.textContent = ""; }, 5000); return; }
+    P = { sec: 0, res: {} }; save(); goSection(0);
+  });
+}
+
+document.addEventListener("keydown", e => {
+  if (e.metaKey || e.ctrlKey || e.altKey || !R) return;
+  const i = "ABCD".indexOf(e.key.toUpperCase()); const j = i >= 0 ? i : "1234".indexOf(e.key);
+  if (j >= 0 && e.key.length === 1) { const b = $("#opt-" + j); if (b && !b.disabled) { e.preventDefault(); b.click(); } }
+});
+
+render();
+
+</script>
+</body>
+</html>
